@@ -98,6 +98,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string
+          discount: number
           id: string
           invoice_id: string
           product_id: string | null
@@ -108,6 +109,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description: string
+          discount?: number
           id?: string
           invoice_id: string
           product_id?: string | null
@@ -118,6 +120,7 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string
+          discount?: number
           id?: string
           invoice_id?: string
           product_id?: string | null
@@ -153,9 +156,13 @@ export type Database = {
           invoice_date: string
           invoice_number: string
           notes: string | null
+          order_date: string | null
+          order_taker_id: string | null
           shop_id: string | null
           status: string
           subtotal: number
+          supplier_id: string | null
+          supply_date: string | null
           tax: number
           tenant_id: string
           total: number
@@ -171,9 +178,13 @@ export type Database = {
           invoice_date?: string
           invoice_number: string
           notes?: string | null
+          order_date?: string | null
+          order_taker_id?: string | null
           shop_id?: string | null
           status?: string
           subtotal?: number
+          supplier_id?: string | null
+          supply_date?: string | null
           tax?: number
           tenant_id: string
           total?: number
@@ -189,9 +200,13 @@ export type Database = {
           invoice_date?: string
           invoice_number?: string
           notes?: string | null
+          order_date?: string | null
+          order_taker_id?: string | null
           shop_id?: string | null
           status?: string
           subtotal?: number
+          supplier_id?: string | null
+          supply_date?: string | null
           tax?: number
           tenant_id?: string
           total?: number
@@ -203,6 +218,13 @@ export type Database = {
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
           {
@@ -464,6 +486,125 @@ export type Database = {
           },
         ]
       }
+      return_items: {
+        Row: {
+          created_at: string
+          id: string
+          invoice_item_id: string | null
+          product_id: string | null
+          quantity: number
+          return_id: string
+          total: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invoice_item_id?: string | null
+          product_id?: string | null
+          quantity?: number
+          return_id: string
+          total?: number
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invoice_item_id?: string | null
+          product_id?: string | null
+          quantity?: number
+          return_id?: string
+          total?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "return_items_invoice_item_id_fkey"
+            columns: ["invoice_item_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_items_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "returns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      returns: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          invoice_id: string | null
+          reason: string | null
+          return_date: string
+          shop_id: string | null
+          status: string
+          tenant_id: string
+          total_refund: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          invoice_id?: string | null
+          reason?: string | null
+          return_date?: string
+          shop_id?: string | null
+          status?: string
+          tenant_id: string
+          total_refund?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          invoice_id?: string | null
+          reason?: string | null
+          return_date?: string
+          shop_id?: string | null
+          status?: string
+          tenant_id?: string
+          total_refund?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "returns_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       routes: {
         Row: {
           assigned_to: string | null
@@ -506,6 +647,8 @@ export type Database = {
         Row: {
           address: string | null
           created_at: string
+          credit_balance: number
+          credit_limit: number
           id: string
           is_active: boolean
           name: string
@@ -518,6 +661,8 @@ export type Database = {
         Insert: {
           address?: string | null
           created_at?: string
+          credit_balance?: number
+          credit_limit?: number
           id?: string
           is_active?: boolean
           name: string
@@ -530,6 +675,8 @@ export type Database = {
         Update: {
           address?: string | null
           created_at?: string
+          credit_balance?: number
+          credit_limit?: number
           id?: string
           is_active?: boolean
           name?: string
