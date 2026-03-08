@@ -5,18 +5,19 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, ShoppingCart, Receipt, Package, Store, Route, Users,
-  Settings, LogOut, Menu, X, ChevronLeft, TruckIcon, ClipboardList
+  Settings, LogOut, Menu, X, ChevronLeft, TruckIcon, ClipboardList, RotateCcw, UserCheck
 } from 'lucide-react';
 
 const navItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['owner', 'manager', 'salesman', 'accountant', 'viewer'] },
-  { path: '/sales', label: 'Sales & Invoices', icon: ShoppingCart, roles: ['owner', 'manager', 'salesman'] },
+  { path: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['owner', 'manager', 'salesman', 'accountant', 'viewer', 'order_taker'] },
+  { path: '/sales', label: 'Sales & Invoices', icon: ShoppingCart, roles: ['owner', 'manager', 'salesman', 'order_taker'] },
   { path: '/expenses', label: 'Expenses', icon: Receipt, roles: ['owner', 'manager', 'accountant'] },
   { path: '/inventory', label: 'Inventory', icon: Package, roles: ['owner', 'manager'] },
-  { path: '/shops', label: 'Shops', icon: Store, roles: ['owner', 'manager', 'salesman'] },
-  { path: '/routes', label: 'Routes', icon: Route, roles: ['owner', 'manager', 'salesman'] },
+  { path: '/shops', label: 'Shops', icon: Store, roles: ['owner', 'manager', 'salesman', 'order_taker'] },
+  { path: '/routes', label: 'Routes', icon: Route, roles: ['owner', 'manager', 'salesman', 'order_taker'] },
   { path: '/suppliers', label: 'Suppliers', icon: TruckIcon, roles: ['owner', 'manager'] },
   { path: '/purchase-orders', label: 'Purchase Orders', icon: ClipboardList, roles: ['owner', 'manager'] },
+  { path: '/returns', label: 'Returns', icon: RotateCcw, roles: ['owner', 'manager', 'salesman', 'order_taker'] },
   { path: '/users', label: 'User Management', icon: Users, roles: ['owner'] },
   { path: '/settings', label: 'Settings', icon: Settings, roles: ['owner', 'manager'] },
 ];
@@ -37,12 +38,10 @@ export default function AppLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} />
       )}
 
-      {/* Sidebar */}
       <aside className={cn(
         "fixed md:relative z-50 flex flex-col h-full bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out",
         sidebarOpen ? "w-64" : "w-16",
@@ -67,7 +66,7 @@ export default function AppLayout() {
 
         <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-1">
           {filteredNav.map(item => {
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
             return (
               <button
                 key={item.path}
@@ -96,7 +95,7 @@ export default function AppLayout() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{profile?.full_name}</p>
-                <p className="text-xs text-sidebar-foreground/60 capitalize">{roles[0]}</p>
+                <p className="text-xs text-sidebar-foreground/60 capitalize">{roles[0]?.replace('_', ' ')}</p>
               </div>
               <Button variant="ghost" size="icon" className="text-sidebar-foreground hover:bg-sidebar-accent h-8 w-8" onClick={signOut}>
                 <LogOut className="w-4 h-4" />
@@ -110,7 +109,6 @@ export default function AppLayout() {
         </div>
       </aside>
 
-      {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 border-b flex items-center px-4 md:px-6 gap-4 bg-card">
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(true)}>
