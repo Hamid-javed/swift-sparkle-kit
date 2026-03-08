@@ -8,21 +8,34 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Routes() {
   const { tenantId } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [routes, setRoutes] = useState<any[]>([]);
+  const [shopCounts, setShopCounts] = useState<Record<string, number>>({});
+  const [profiles, setProfiles] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: '', description: '' });
 
   const load = async () => {
     if (!tenantId) return;
-    const { data } = await supabase.from('routes').select('*').eq('tenant_id', tenantId).order('name');
-    setRoutes(data || []);
+    const [routeRes, shopRes, profRes] = await Promise.all([
+      supabase.from('routes').select('*').eq('tenant_id', tenantId).order('name'),
+      supabase.from('shops').select('id, route_id').eq('tenant_id', tenantId),
+      supabase.from('profiles').select('user_id, full_name').eq('tenant_id', tenantId),
+    ]);
+    setRoutes(routeRes.data || []);
+    setProfiles(profRes.data || []);
+    const counts: Record<string, number> = {};
+    (shopRes.data || []).forEach((s: any) => { if (s.route_id) counts[s.route_id] = (counts[s.route_id] || 0) + 1; });
+    setShopCounts(counts);
   };
 
   useEffect(() => { load(); }, [tenantId]);
@@ -38,6 +51,12 @@ export default function Routes() {
   };
 
   const filtered = routes.filter(r => r.name.toLowerCase().includes(search.toLowerCase()));
+
+  const getAssignedName = (assignedTo: string | null) => {
+    if (!assignedTo) return '—';
+    const profile = profiles.find(p => p.user_id === assignedTo);
+    return profile?.full_name || '—';
+  };
 
   return (
     <div className="space-y-6">
@@ -72,17 +91,25 @@ export default function Routes() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Description</TableHead>
+                <TableHead>Shops</TableHead>
+                <TableHead>Assigned To</TableHead>
                 <TableHead>Created</TableHead>
+                <TableHead className="w-10"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground py-8">No routes found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No routes found</TableCell></TableRow>
               ) : filtered.map(r => (
-                <TableRow key={r.id}>
+                <TableRow key={r.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/routes/${r.id}`)}>
                   <TableCell className="font-medium">{r.name}</TableCell>
-                  <TableCell>{r.description || '—'}</TableCell>
+                  <TableCell className="max-w-[200px] truncate">{r.description || '—'}</TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{shopCounts[r.id] || 0} shops</Badge>
+                  </TableCell>
+                  <TableCell>{getAssignedName(r.assigned_to)}</TableCell>
                   <TableCell>{new Date(r.created_at).toLocaleDateString()}</TableCell>
+                  <TableCell><Eye className="w-4 h-4 text-muted-foreground" /></TableCell>
                 </TableRow>
               ))}
             </TableBody>
